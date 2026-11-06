@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -214,10 +215,10 @@ fun SpatialGlassCard(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "Abspielen",
+                                        imageVector = Icons.Default.OpenInNew,
+                                        contentDescription = "Website öffnen",
                                         tint = if (isFocused) OledBlack else TextPrimary,
-                                        modifier = Modifier.size(28.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -307,9 +308,9 @@ fun SpatialGlassCard(
                         )
 
                         Text(
-                            text = "▶ OK",
+                            text = "🌐 Website",
                             color = if (isFocused) NeonCyan else Color.Transparent,
-                            fontSize = 10.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }

@@ -126,7 +126,7 @@ fun HeroMetadataSection(
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = "Media3 ExoPlayer",
+                                text = "Web Direktlink",
                                 color = TextSecondary,
                                 fontSize = 11.sp
                             )
@@ -159,7 +159,7 @@ fun HeroMetadataSection(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Schnell-Aktionen (Play, Favorite)
+                    // Schnell-Aktionen (Website öffnen, Favorite)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -180,7 +180,7 @@ fun HeroMetadataSection(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Abspielen (OK)",
+                                text = "Zur Website (OK)",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )

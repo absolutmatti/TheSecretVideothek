@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 sealed interface TVScreen {
     data object StealthSplash : TVScreen
     data object Catalog : TVScreen
-    data class Player(val video: VideoItem) : TVScreen
+    data class ActressDetail(val category: ActressCategory) : TVScreen
     data object Search : TVScreen
     data object Favorites : TVScreen
     data object PanicReset : TVScreen
@@ -83,11 +83,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _focusedVideo.value = video
     }
 
-    fun playVideo(video: VideoItem) {
-        _currentScreen.value = TVScreen.Player(video)
+    fun openActress(category: ActressCategory) {
+        _currentScreen.value = TVScreen.ActressDetail(category)
     }
 
-    fun closePlayer() {
+    fun closeActressDetail() {
         _currentScreen.value = TVScreen.Catalog
     }
 

@@ -49,6 +49,7 @@ fun TVCatalogScreen(
     onVideoFocused: (VideoItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
     onNavigate: (TVScreen) -> Unit,
+    onActressSelected: (ActressCategory) -> Unit,
     onRefresh: () -> Unit,
     onPanic: () -> Unit,
     modifier: Modifier = Modifier
@@ -155,7 +156,8 @@ fun TVCatalogScreen(
                             category = category,
                             onVideoSelected = onVideoSelected,
                             onVideoFocused = onVideoFocused,
-                            onToggleFavorite = onToggleFavorite
+                            onToggleFavorite = onToggleFavorite,
+                            onActressSelected = onActressSelected
                         )
                     }
                 }
