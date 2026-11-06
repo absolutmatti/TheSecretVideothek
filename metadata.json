@@ -1,0 +1,6 @@
+{
+  "name": "Zurücksetzen",
+  "description": "Systemdiagnose- und Wiederherstellungs-App für Android TV",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
