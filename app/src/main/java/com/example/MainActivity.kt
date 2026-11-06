@@ -87,7 +87,7 @@ fun TVAppRoot(viewModel: MainViewModel) {
     val context = LocalContext.current
     val currentScreen by viewModel.currentScreen.collectAsState()
     val categories by viewModel.categories.collectAsState()
-    val focusedVideo by viewModel.focusedVideo.collectAsState()
+    val favorites by viewModel.favorites.collectAsState()
     val favoriteVideos by viewModel.favoriteVideos.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
@@ -112,17 +112,11 @@ fun TVAppRoot(viewModel: MainViewModel) {
                 is TVScreen.Catalog -> {
                     TVCatalogScreen(
                         categories = categories,
-                        focusedVideo = focusedVideo,
                         currentScreen = screen,
-                        onVideoSelected = { video ->
-                            openWebUrl(context, video.url)
-                        },
-                        onVideoFocused = { viewModel.onVideoFocused(it) },
-                        onToggleFavorite = { viewModel.toggleFavorite(it) },
-                        onNavigate = { viewModel.navigateTo(it) },
                         onActressSelected = { category ->
                             viewModel.openActress(category)
                         },
+                        onNavigate = { viewModel.navigateTo(it) },
                         onRefresh = { viewModel.refreshCatalog() },
                         onPanic = { viewModel.triggerPanicMode() }
                     )
@@ -131,10 +125,13 @@ fun TVAppRoot(viewModel: MainViewModel) {
                 is TVScreen.ActressDetail -> {
                     TVActressDetailScreen(
                         category = screen.category,
+                        favoriteIds = favorites,
                         onVideoSelected = { video ->
                             openWebUrl(context, video.url)
                         },
-                        onToggleFavorite = { viewModel.toggleFavorite(it) },
+                        onToggleFavorite = { videoId ->
+                            viewModel.toggleFavorite(videoId)
+                        },
                         onBack = { viewModel.closeActressDetail() }
                     )
                 }

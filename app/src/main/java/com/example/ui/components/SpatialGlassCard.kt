@@ -128,6 +128,10 @@ fun SpatialGlassCard(
                             onClick()
                             true
                         }
+                        Key.F, Key.Menu -> {
+                            onToggleFavorite?.invoke()
+                            true
+                        }
                         else -> false
                     }
                 } else false

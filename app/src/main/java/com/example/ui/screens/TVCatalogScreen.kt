@@ -1,8 +1,7 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,111 +11,59 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.compose.ui.unit.sp
 import com.example.data.model.ActressCategory
-import com.example.data.model.VideoItem
-import com.example.ui.components.HeroMetadataSection
-import com.example.ui.components.TVCategoryRow
+import com.example.ui.components.ActressTileCard
 import com.example.ui.components.TVNavigationSidebar
-import com.example.ui.theme.DeepMidnight
-import com.example.ui.theme.OledBlack
+import com.example.ui.theme.NeonBlue
+import com.example.ui.theme.NeonCyan
 import com.example.ui.theme.PureBlack
+import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 import com.example.ui.viewmodel.TVScreen
 
 /**
- * Hauptbildschirm (Spatial Video-Katalog) für Google TV.
- * Bietet dynamisch unscharfe Hintergründe bei D-Pad-Fokus,
- * Z-Achsen-Glassmorphism und flüssige Reihennavigation.
+ * Startseite der App: Zeigt ausschließlich die Darstellerinnen als Kacheln an.
+ * Erst beim Klick auf eine Darstellerin werden alle ihre Videos aufgelistet.
  */
 @Composable
 fun TVCatalogScreen(
     categories: List<ActressCategory>,
-    focusedVideo: VideoItem?,
     currentScreen: TVScreen,
-    onVideoSelected: (VideoItem) -> Unit,
-    onVideoFocused: (VideoItem) -> Unit,
-    onToggleFavorite: (String) -> Unit,
-    onNavigate: (TVScreen) -> Unit,
     onActressSelected: (ActressCategory) -> Unit,
+    onNavigate: (TVScreen) -> Unit,
     onRefresh: () -> Unit,
     onPanic: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val verticalListState = rememberLazyListState()
-
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(PureBlack)
             .testTag("tv_catalog_screen")
     ) {
-        // 1. Dynamischer Umgebungs-Hintergrund mit Weichzeichner (Blur-Effekt)
-        // Reagiert auf das aktuell per D-Pad fokussierte Video
-        Crossfade(
-            targetState = focusedVideo,
-            animationSpec = tween(durationMillis = 600),
-            label = "BackdropBlurCrossfade",
-            modifier = Modifier.fillMaxSize()
-        ) { video ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (!video?.posterUrl.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = video?.posterUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .blur(radius = 50.dp)
-                    )
-                } else {
-                    // OLED-optimierter sphärischer Farbverlauf
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0x3300F2FE),
-                                        Color(0x221E1B4B),
-                                        OledBlack
-                                    )
-                                )
-                            )
-                    )
-                }
-
-                // Vignette & Abdunklung für optimalen Kontrast und OLED-Schutz
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(
-                                    Color(0x99000000),
-                                    Color(0xCC05070B),
-                                    PureBlack
-                                )
-                            )
-                        )
-                )
-            }
-        }
-
-        // 2. Haupt-Inhalt mit Seitenleiste und vertikalen Video-Kategorien
         Row(modifier = Modifier.fillMaxSize()) {
-            // Schwebende Navigationsleiste links
+            // 1. Schwebende Navigationsleiste links
             TVNavigationSidebar(
                 currentScreen = currentScreen,
                 onNavigate = onNavigate,
@@ -124,40 +71,92 @@ fun TVCatalogScreen(
                 onPanic = onPanic
             )
 
-            // Vertikale Scroll-Ansicht: Oben Metadaten, darunter die Reihen
-            LazyColumn(
-                state = verticalListState,
-                contentPadding = PaddingValues(bottom = 64.dp),
+            // 2. Hauptbereich: Darstellerinnen-Raster (Kacheln)
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
+                    .padding(horizontal = 40.dp, vertical = 24.dp)
             ) {
-                // A. Oberer Metadaten-Bereich für das fokussierte Video
-                item(key = "hero_metadata_section") {
-                    HeroMetadataSection(
-                        video = focusedVideo,
-                        onPlayClicked = {
-                            focusedVideo?.let { onVideoSelected(it) }
-                        },
-                        onToggleFavorite = {
-                            focusedVideo?.let { onToggleFavorite(it.id) }
+                // Kopfbereich: Titel & Statistik
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Darstellerinnen",
+                                color = TextPrimary,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0x3300F2FE))
+                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "${categories.size} Darstellerinnen",
+                                    color = NeonCyan,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Wähle eine Darstellerin, um alle ihre Videos anzuzeigen",
+                            color = TextSecondary,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0x22FFFFFF))
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Group,
+                            contentDescription = null,
+                            tint = NeonCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "A - Z Verzeichnis",
+                            color = TextPrimary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
-                // B. Horizontale Reihen für jede Darstellerin / Kategorie
-                itemsIndexed(
-                    items = categories,
-                    key = { _, cat -> cat.name }
-                ) { _, category ->
-                    if (category.videos.isNotEmpty()) {
-                        TVCategoryRow(
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Kachelraster für alle Darstellerinnen
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 190.dp),
+                    contentPadding = PaddingValues(bottom = 48.dp),
+                    horizontalArrangement = Arrangement.spacedBy(22.dp),
+                    verticalArrangement = Arrangement.spacedBy(22.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        items = categories,
+                        key = { it.name }
+                    ) { category ->
+                        ActressTileCard(
                             category = category,
-                            onVideoSelected = onVideoSelected,
-                            onVideoFocused = onVideoFocused,
-                            onToggleFavorite = onToggleFavorite,
-                            onActressSelected = onActressSelected
+                            onClick = { onActressSelected(category) }
                         )
                     }
                 }

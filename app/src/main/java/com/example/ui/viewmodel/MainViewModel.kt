@@ -85,6 +85,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun openActress(category: ActressCategory) {
         _currentScreen.value = TVScreen.ActressDetail(category)
+        if (category.videos.isEmpty()) {
+            viewModelScope.launch {
+                val loaded = repository.loadActressVideosIfNeeded(category)
+                if (_currentScreen.value is TVScreen.ActressDetail) {
+                    _currentScreen.value = TVScreen.ActressDetail(loaded)
+                }
+            }
+        }
     }
 
     fun closeActressDetail() {

@@ -81,28 +81,61 @@ class VideoRepository(private val context: Context) {
     suspend fun initializeCatalog() = withContext(Dispatchers.IO) {
         _isLoading.value = true
         try {
-            // 1. Lade alle 196 Darstellerinnen-Namen
+            // 1. Lade alle 196 Darstellerinnen-Namen aus den Assets
             loadActressesIndex()
 
             // 2. Lade den vorbereiteten Snapshot der Top-Kategorien
             val initialCategories = loadBundledCache()
-            if (initialCategories.isNotEmpty()) {
-                val favs = _favorites.value
-                val updated = initialCategories.map { cat ->
-                    cat.copy(videos = cat.videos.map { v ->
-                        v.copy(isFavorite = favs.contains(v.id))
-                    })
-                }
-                _categories.value = updated
-            }
+            val initialMap = initialCategories.associateBy { it.name }
+            val favs = _favorites.value
 
-            // 3. Ergänze im Hintergrund weitere Kategorien aus dem GitHub Repo
+            // 3. Führe alle 196 Darstellerinnen zusammen
+            val allList = _allActressesNames.value.map { name ->
+                val cached = initialMap[name]
+                if (cached != null) {
+                    cached.copy(videos = cached.videos.map { v -> v.copy(isFavorite = favs.contains(v.id)) })
+                } else {
+                    ActressCategory(
+                        name = name,
+                        count = 0,
+                        folderName = name,
+                        videos = emptyList(),
+                        isLoaded = false
+                    )
+                }
+            }.sortedBy { it.name }
+
+            _categories.value = allList
+
+            // 4. Ergänze im Hintergrund weitere Kategorien aus dem GitHub Repo
             fetchMissingCategoriesFromGitHub()
         } catch (e: Exception) {
             Log.e(TAG, "Fehler beim Initialisieren des Katalogs: ${e.message}", e)
         } finally {
             _isLoading.value = false
         }
+    }
+
+    /**
+     * Lädt bei Bedarf die Videos einer Darstellerin nach, falls sie noch nicht im Cache sind.
+     */
+    suspend fun loadActressVideosIfNeeded(category: ActressCategory): ActressCategory = withContext(Dispatchers.IO) {
+        if (category.videos.isNotEmpty()) {
+            return@withContext category
+        }
+        val loaded = fetchActressFromGitHub(category.name)
+        if (loaded != null) {
+            val favs = _favorites.value
+            val updated = loaded.copy(videos = loaded.videos.map { v -> v.copy(isFavorite = favs.contains(v.id)) })
+            val current = _categories.value.toMutableList()
+            val index = current.indexOfFirst { it.name == category.name }
+            if (index >= 0) {
+                current[index] = updated
+                _categories.value = current
+            }
+            return@withContext updated
+        }
+        return@withContext category
     }
 
     private fun loadActressesIndex() {
